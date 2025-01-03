@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { Profile } from '$lib/types';
+	import Logo from '$lib/components/Logo.svelte';
 
 	let { data } = $props<{
 		data: {
@@ -74,10 +75,8 @@
 		>
 			<div class="h-full flex flex-col justify-between">
 				<div>
-					<div class="flex items-center mb-6">
-						<Beer class="h-10 w-10 mr-2" />
-						<Martini class="h-10 w-10" />
-						<h1 class="text-4xl font-bold ml-2">TasteTuner</h1>
+					<div class="mb-6 w-2/3">
+						<Logo />
 					</div>
 					<p class="text-xl font-semibold mb-4">Your Taste, Perfectly Tuned!</p>
 					<p class="mb-6">
