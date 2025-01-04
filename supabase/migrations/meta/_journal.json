@@ -1,12 +1,19 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
+  "version": "5",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
+      "version": "5",
+      "when": "NOW()",
+      "tag": "20240320000000_update_profile_enums",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
       "version": "7",
-      "when": 1735871343403,
-      "tag": "0000_productive_sue_storm",
+      "when": 1735953116080,
+      "tag": "0001_third_supernaut",
       "breakpoints": true
     }
   ]

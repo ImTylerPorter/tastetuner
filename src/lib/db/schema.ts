@@ -14,6 +14,19 @@ import {
 export const drinkType = pgEnum('drink_type', ['beer', 'cocktail', 'spirit', 'wine', 'non-alcoholic']);
 export const flavorPreference = pgEnum('flavor_preference', ['sweet', 'bitter', 'sour', 'spicy', 'umami', 'salty']);
 
+// Add new enum for drink styles
+export const beerStyle = pgEnum('beer_style', [
+  'ipa', 'pilsner', 'stout', 'porter', 'lager', 'wheat', 'sour', 'pale_ale'
+]);
+
+export const cocktailStyle = pgEnum('cocktail_style', [
+  'martini', 'margarita', 'old_fashioned', 'mojito', 'negroni', 'sour', 'tiki', 'spritz'
+]);
+
+export const wineStyle = pgEnum('wine_style', [
+  'red', 'white', 'rose', 'sparkling', 'dessert', 'fortified'
+]);
+
 // Reference to Supabase's built-in `auth.users` table
 const auth = pgSchema('auth');
 export const authUsers = auth.table('users', {
@@ -27,8 +40,11 @@ export const profileTable = pgTable('profiles', {
   firstName: varchar('first_name', { length: 100 }),
   lastName: varchar('last_name', { length: 100 }),
   profilePhoto: varchar('profile_photo'), // URL to the profile photo
-  favoriteFlavor: flavorPreference('favorite_flavor'),
-  favoriteDrinkType: drinkType('favorite_drink_type'),
+  favoriteFlavors: flavorPreference('favorite_flavors').array(),  // Change from text to enum array
+  favoriteDrinkTypes: drinkType('favorite_drink_types').array(),  // Change from text to enum array
+  favoriteBeerStyles: beerStyle('favorite_beer_styles').array(),  // Change from text to enum array
+  favoriteCocktailStyles: cocktailStyle('favorite_cocktail_styles').array(),  // Change from text to enum array
+  favoriteWineStyles: wineStyle('favorite_wine_styles').array(),  // Change from text to enum array
   dietaryRestrictions: text('dietary_restrictions'),
   budget: integer('budget'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
