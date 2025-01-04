@@ -4,16 +4,44 @@
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": "NOW()",
-      "tag": "20240320000000_update_profile_enums",
+      "version": "7",
+      "when": 1735959205845,
+      "tag": "0000_rare_celestials",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1735953116080,
-      "tag": "0001_third_supernaut",
+      "when": 1735959745114,
+      "tag": "0001_military_virginia_dare",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1735960227013,
+      "tag": "0002_mixed_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1735960450106,
+      "tag": "0003_awesome_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1735960907589,
+      "tag": "0004_deep_bushwacker",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1736030656294,
+      "tag": "0005_real_mandrill",
       "breakpoints": true
     }
   ]

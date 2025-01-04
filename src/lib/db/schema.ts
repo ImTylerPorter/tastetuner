@@ -8,7 +8,10 @@ import {
   boolean,
   integer,
   pgEnum,
+  jsonb,
+  serial
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 // Define enums for drink types and preferences
 export const drinkType = pgEnum('drink_type', ['beer', 'cocktail', 'spirit', 'wine', 'non-alcoholic']);
@@ -30,21 +33,21 @@ export const wineStyle = pgEnum('wine_style', [
 // Reference to Supabase's built-in `auth.users` table
 const auth = pgSchema('auth');
 export const authUsers = auth.table('users', {
-  id: uuid('id').primaryKey(),
+  id: uuid('id').primaryKey()
 });
 
 // Profile table
 export const profileTable = pgTable('profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => authUsers.id, { onDelete: 'cascade' }), // Cascade delete profile if user is deleted
+  userId: uuid('user_id').notNull(),
   firstName: varchar('first_name', { length: 100 }),
   lastName: varchar('last_name', { length: 100 }),
-  profilePhoto: varchar('profile_photo'), // URL to the profile photo
-  favoriteFlavors: flavorPreference('favorite_flavors').array(),  // Change from text to enum array
-  favoriteDrinkTypes: drinkType('favorite_drink_types').array(),  // Change from text to enum array
-  favoriteBeerStyles: beerStyle('favorite_beer_styles').array(),  // Change from text to enum array
-  favoriteCocktailStyles: cocktailStyle('favorite_cocktail_styles').array(),  // Change from text to enum array
-  favoriteWineStyles: wineStyle('favorite_wine_styles').array(),  // Change from text to enum array
+  profilePhoto: varchar('profile_photo'),
+  favoriteFlavors: flavorPreference('favorite_flavors').array(),
+  favoriteDrinkTypes: drinkType('favorite_drink_types').array(),
+  favoriteBeerStyles: beerStyle('favorite_beer_styles').array(),
+  favoriteCocktailStyles: cocktailStyle('favorite_cocktail_styles').array(),
+  favoriteWineStyles: wineStyle('favorite_wine_styles').array(),
   dietaryRestrictions: text('dietary_restrictions'),
   budget: integer('budget'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -63,20 +66,10 @@ export const drinks = pgTable('drinks', {
   isExclusive: boolean('is_exclusive').default(false)
 });
 
-// Recommendations table
-export const recommendations = pgTable('recommendations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => authUsers.id),
-  drinkId: uuid('drink_id').references(() => drinks.id),
-  reason: text('reason'),
-  recommendedAt: timestamp('recommended_at', { withTimezone: true }).defaultNow().notNull(),
-  source: varchar('source', { length: 255 }) // Could be 'photo', 'link', 'api'
-});
-
 // Drink history table with rating
 export const drinkHistory = pgTable('drink_history', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => authUsers.id),
+  userId: uuid('user_id').notNull(),
   drinkId: uuid('drink_id').references(() => drinks.id),
   consumedAt: timestamp('consumed_at', { withTimezone: true }).defaultNow().notNull(),
   rating: integer('rating')
@@ -86,11 +79,100 @@ export const drinkHistory = pgTable('drink_history', {
   ]
 }));
 
+// Recommendations table
+export const recommendations = pgTable('recommendations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull(),
+  drinkId: uuid('drink_id').references(() => drinks.id),
+  reason: text('reason'),
+  recommendedAt: timestamp('recommended_at', { withTimezone: true }).defaultNow().notNull(),
+  source: varchar('source', { length: 255 }) // Could be 'photo', 'link', 'api'
+});
+
+// User connections table for social features
+export const userConnections = pgTable('user_connections', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  followerId: uuid('follower_id').notNull(),
+  followedId: uuid('followed_id').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 // For premium features like API connections
 export const restaurantConnections = pgTable('restaurant_connections', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => authUsers.id),
+  userId: uuid('user_id').notNull(),  // Reference to auth.users
   restaurantId: varchar('restaurant_id', { length: 100 }),
   apiKey: varchar('api_key', { length: 255 }).notNull(),
   connectionStatus: boolean('connection_status').default(false)
 });
+
+// Analytics table
+export const analyticsTable = pgTable('analytics', {
+	id: serial('id').primaryKey(),
+	userId: uuid('user_id').notNull(),  // Reference to auth.users
+	type: text('type').notNull(),
+	category: text('category').notNull(),
+	action: text('action').notNull(),
+	label: text('label'),
+	metadata: jsonb('metadata'),
+	timestamp: timestamp('timestamp').notNull().defaultNow()
+});
+
+// Notifications table
+export const notifications = pgTable('notifications', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id').notNull(),  // Reference to auth.users
+	type: varchar('type', { length: 50 }).notNull(),
+	message: text('message').notNull(),
+	read: boolean('read').default(false),
+	createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Menu cache table
+export const menuCache = pgTable('menu_cache', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	menuText: text('menu_text').notNull(),
+	analysis: jsonb('analysis').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	expiresAt: timestamp('expires_at').notNull()
+});
+
+// Relations
+export const profileRelations = relations(profileTable, ({ many }) => ({
+  drinkHistory: many(drinkHistory),
+  recommendations: many(recommendations),
+  connections: many(userConnections, { relationName: 'followerConnections' })
+}));
+
+export const drinkHistoryRelations = relations(drinkHistory, ({ one }) => ({
+  profile: one(profileTable, {
+    fields: [drinkHistory.userId],
+    references: [profileTable.userId]
+  }),
+  drink: one(drinks, {
+    fields: [drinkHistory.drinkId],
+    references: [drinks.id]
+  })
+}));
+
+export const recommendationsRelations = relations(recommendations, ({ one }) => ({
+  profile: one(profileTable, {
+    fields: [recommendations.userId],
+    references: [profileTable.userId]
+  }),
+  drink: one(drinks, {
+    fields: [recommendations.drinkId],
+    references: [drinks.id]
+  })
+}));
+
+export const userConnectionsRelations = relations(userConnections, ({ one }) => ({
+  followerProfile: one(profileTable, {
+    fields: [userConnections.followerId],
+    references: [profileTable.userId]
+  }),
+  followedProfile: one(profileTable, {
+    fields: [userConnections.followedId],
+    references: [profileTable.userId]
+  })
+}));

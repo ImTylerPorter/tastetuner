@@ -1,18 +1,107 @@
 {
-  "id": "17703ae7-73ba-4122-8158-21a12a1ebaea",
-  "prevId": "a87e9f92-17de-4ea9-98d8-08ef9daa6b92",
+  "id": "912cb286-d472-49ea-a854-edd2827250ac",
+  "prevId": "ed294faa-21a3-4056-9522-2f6f69243dda",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "auth.users": {
-      "name": "users",
-      "schema": "auth",
+    "public.analytics": {
+      "name": "analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "analytics_user_id_auth_users_id_fk": {
+          "name": "analytics_user_id_auth_users_id_fk",
+          "tableFrom": "analytics",
+          "tableTo": "auth_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.auth_users": {
+      "name": "auth_users",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -62,11 +151,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "drink_history_user_id_users_id_fk": {
-          "name": "drink_history_user_id_users_id_fk",
+        "drink_history_user_id_auth_users_id_fk": {
+          "name": "drink_history_user_id_auth_users_id_fk",
           "tableFrom": "drink_history",
-          "tableTo": "users",
-          "schemaTo": "auth",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
@@ -161,6 +249,117 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.menu_cache": {
+      "name": "menu_cache",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "menu_text": {
+          "name": "menu_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "analysis": {
+          "name": "analysis",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notifications": {
+      "name": "notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "read": {
+          "name": "read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notifications_user_id_auth_users_id_fk": {
+          "name": "notifications_user_id_auth_users_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "auth_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.profiles": {
       "name": "profiles",
       "schema": "",
@@ -226,13 +425,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "favorite_drink_type": {
-          "name": "favorite_drink_type",
-          "type": "drink_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
         "dietary_restrictions": {
           "name": "dietary_restrictions",
           "type": "text",
@@ -262,11 +454,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "profiles_user_id_users_id_fk": {
-          "name": "profiles_user_id_users_id_fk",
+        "profiles_user_id_auth_users_id_fk": {
+          "name": "profiles_user_id_auth_users_id_fk",
           "tableFrom": "profiles",
-          "tableTo": "users",
-          "schemaTo": "auth",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
@@ -328,11 +519,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "recommendations_user_id_users_id_fk": {
-          "name": "recommendations_user_id_users_id_fk",
+        "recommendations_user_id_auth_users_id_fk": {
+          "name": "recommendations_user_id_auth_users_id_fk",
           "tableFrom": "recommendations",
-          "tableTo": "users",
-          "schemaTo": "auth",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
           ],
@@ -401,13 +591,78 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "restaurant_connections_user_id_users_id_fk": {
-          "name": "restaurant_connections_user_id_users_id_fk",
+        "restaurant_connections_user_id_auth_users_id_fk": {
+          "name": "restaurant_connections_user_id_auth_users_id_fk",
           "tableFrom": "restaurant_connections",
-          "tableTo": "users",
-          "schemaTo": "auth",
+          "tableTo": "auth_users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_connections": {
+      "name": "user_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "follower_id": {
+          "name": "follower_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "followed_id": {
+          "name": "followed_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_connections_follower_id_auth_users_id_fk": {
+          "name": "user_connections_follower_id_auth_users_id_fk",
+          "tableFrom": "user_connections",
+          "tableTo": "auth_users",
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_connections_followed_id_auth_users_id_fk": {
+          "name": "user_connections_followed_id_auth_users_id_fk",
+          "tableFrom": "user_connections",
+          "tableTo": "auth_users",
+          "columnsFrom": [
+            "followed_id"
           ],
           "columnsTo": [
             "id"
