@@ -3,14 +3,14 @@
 	import type { DrinkHistory } from '$lib/types';
 	import { drinkType } from '$lib/db/schema';
 
-	let { history } = $props<{ history: DrinkHistory[] }>();
+	let { history = [] } = $props<{ history: DrinkHistory[] }>();
 
 	let selectedType = $state<string>('all');
 	let selectedRating = $state<number | null>(null);
 	let sortBy = $state<'date' | 'rating'>('date');
 
 	let filteredHistory = $derived(
-		history
+		(history || [])
 			.filter((item: DrinkHistory) => {
 				if (selectedType !== 'all' && item.drink.type !== selectedType) return false;
 				if (selectedRating !== null && item.rating !== selectedRating) return false;
