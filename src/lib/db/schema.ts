@@ -76,6 +76,7 @@ export const drinkHistory = pgTable('drink_history', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull(),
   drinkId: uuid('drink_id').references(() => drinks.id),
+  locationId: uuid('location_id').references(() => locations.id),
   consumedAt: timestamp('consumed_at', { withTimezone: true }).defaultNow().notNull(),
   rating: integer('rating')
 }, () => ({
@@ -173,13 +174,17 @@ export const profileRelations = relations(profileTable, ({ many }) => ({
 }));
 
 export const drinkHistoryRelations = relations(drinkHistory, ({ one }) => ({
-  profile: one(profileTable, {
+  user: one(profileTable, {
     fields: [drinkHistory.userId],
-    references: [profileTable.userId]
+    references: [profileTable.id]
   }),
   drink: one(drinks, {
     fields: [drinkHistory.drinkId],
     references: [drinks.id]
+  }),
+  location: one(locations, {
+    fields: [drinkHistory.locationId],
+    references: [locations.id]
   })
 }));
 

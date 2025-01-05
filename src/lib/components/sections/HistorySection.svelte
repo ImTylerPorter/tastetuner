@@ -8,6 +8,6 @@
 	}>();
 </script>
 
-<Section title="Drink History">
+<Section title="My Drinks">
 	<DrinkHistory {history} />
 </Section>

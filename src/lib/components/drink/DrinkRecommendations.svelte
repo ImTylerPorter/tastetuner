@@ -28,12 +28,38 @@
 	async function handleSaveDrink(drinkName: string) {
 		try {
 			savingDrink = drinkName;
+			// Find the drink details from the menu analysis
+			const drinkDetails = recommendations?.find(
+				(r: {
+					drinkName: string;
+					type?: string;
+					style?: string;
+					description?: string;
+					alcoholContent?: number;
+					brand?: string;
+					isSeasonal?: boolean;
+					isExclusive?: boolean;
+				}) => r.drinkName === drinkName
+			);
+			if (!drinkDetails) {
+				throw new Error('Drink details not found');
+			}
+
 			const response = await fetch('/api/drinks/save', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ drinkName })
+				body: JSON.stringify({
+					drinkName: drinkDetails.drinkName,
+					type: drinkDetails.type || 'beer',
+					style: drinkDetails.style,
+					description: drinkDetails.description,
+					alcoholContent: drinkDetails.alcoholContent,
+					brand: drinkDetails.brand,
+					isSeasonal: drinkDetails.isSeasonal,
+					isExclusive: drinkDetails.isExclusive
+				})
 			});
 
 			if (!response.ok) {

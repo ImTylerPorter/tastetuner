@@ -86,7 +86,7 @@
 	<!-- History List -->
 	{#if filteredHistory.length === 0}
 		<div class="text-center py-12">
-			<p class="text-gray-500">No drink history found with the selected filters.</p>
+			<p class="text-gray-500">No drinks found with the selected filters.</p>
 		</div>
 	{:else}
 		<div class="bg-white shadow overflow-hidden sm:rounded-md">

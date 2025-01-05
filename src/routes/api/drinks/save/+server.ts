@@ -10,7 +10,7 @@ export async function POST({ request, locals }) {
 		}
 
 		const data = await request.json();
-		const { drinkName } = data;
+		const { drinkName, type = 'beer', style, description, alcoholContent, brand, isSeasonal, isExclusive } = data;
 
 		if (!drinkName) {
 			return json({ error: 'Drink name is required' }, { status: 400 });
@@ -25,7 +25,13 @@ export async function POST({ request, locals }) {
 			const [newDrink] = await db.insert(drinks)
 				.values({
 					name: drinkName,
-					type: 'beer', // Default type, should be updated later when rating
+					type,
+					style,
+					description,
+					alcoholContent,
+					brand,
+					isSeasonal,
+					isExclusive
 				})
 				.returning();
 			drink = newDrink;

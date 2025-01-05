@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Camera, User, History, Settings } from 'lucide-svelte';
+	import { Camera, User, History, Settings, MapPin } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import type { Profile } from '$lib/types';
 	import { page } from '$app/stores';
@@ -31,15 +31,26 @@
 						Scan Menu
 					</a>
 					<a
-						href="/dashboard/history"
+						href="/dashboard/locations"
 						class={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-							currentPath === '/dashboard/history'
+							currentPath.startsWith('/dashboard/locations')
+								? 'text-black bg-highlight'
+								: 'text-white/70 hover:text-white hover:bg-highlight/20'
+						}`}
+					>
+						<MapPin class="w-5 h-5 mr-2" />
+						Locations
+					</a>
+					<a
+						href="/dashboard/my-drinks"
+						class={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+							currentPath === '/dashboard/my-drinks'
 								? 'text-black bg-highlight'
 								: 'text-white/70 hover:text-white hover:bg-highlight/20'
 						}`}
 					>
 						<History class="w-5 h-5 mr-2" />
-						History
+						My Drinks
 					</a>
 					<a
 						href="/dashboard/profile"

@@ -33,7 +33,7 @@
 		>
 			<div class="text-green-500 flex items-center">
 				<Check class="w-5 h-5 mr-2" />
-				<span>Added to history!</span>
+				<span>Added to my drinks!</span>
 			</div>
 		</div>
 	{/if}
@@ -45,11 +45,11 @@
 			onclick={() => (showForm = true)}
 		>
 			<Plus class="w-4 h-4 mr-1" />
-			Add to History
+			Add to My Drinks
 		</button>
 	{:else}
 		<form
-			action="/api/drink-history"
+			action="/api/my-drinks"
 			method="POST"
 			use:enhance={() => {
 				return async ({ result }) => {

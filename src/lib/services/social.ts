@@ -49,7 +49,7 @@ export async function getFriendsDrinkHistory(userId: string) {
 	return db.query.drinkHistory.findMany({
 		where: inArray(drinkHistory.userId, followingIds),
 		with: {
-			profile: true,
+			user: true,
 			drink: true
 		},
 		orderBy: (history, { desc }) => [desc(history.consumedAt)]

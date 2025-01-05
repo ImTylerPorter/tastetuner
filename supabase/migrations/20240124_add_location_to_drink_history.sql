@@ -1,0 +1,1 @@
+ALTER TABLE "drink_history" ADD COLUMN "location_id" uuid REFERENCES "locations"("id");
