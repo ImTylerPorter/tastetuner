@@ -13,17 +13,19 @@
 	}
 </script>
 
-<nav class="bg-transparent">
-	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<nav class="backdrop-blur-md bg-black/10 border-b border-white/10">
+	<div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
 		<div class="flex h-16 justify-between items-center">
 			<div class="flex items-center">
 				<div class="flex-shrink-0 w-32">
 					<Logo />
 				</div>
-				<div class="hidden sm:ml-6 sm:flex sm:space-x-6">
+				<div class="hidden sm:ml-6 sm:flex sm:space-x-1">
 					<button
-						class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
-							activeSection === 'scan' ? 'text-white' : 'text-white/80 hover:text-white'
+						class={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+							activeSection === 'scan'
+								? 'text-white bg-white/20'
+								: 'text-white/70 hover:text-white hover:bg-white/10'
 						}`}
 						onclick={() => handleSectionChange('scan')}
 					>
@@ -31,8 +33,10 @@
 						Scan Menu
 					</button>
 					<button
-						class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
-							activeSection === 'history' ? 'text-white' : 'text-white/80 hover:text-white'
+						class={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+							activeSection === 'history'
+								? 'text-white bg-white/20'
+								: 'text-white/70 hover:text-white hover:bg-white/10'
 						}`}
 						onclick={() => handleSectionChange('history')}
 					>
@@ -40,8 +44,10 @@
 						History
 					</button>
 					<button
-						class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
-							activeSection === 'profile' ? 'text-white' : 'text-white/80 hover:text-white'
+						class={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+							activeSection === 'profile'
+								? 'text-white bg-white/20'
+								: 'text-white/70 hover:text-white hover:bg-white/10'
 						}`}
 						onclick={() => handleSectionChange('profile')}
 					>
@@ -51,18 +57,18 @@
 				</div>
 			</div>
 
-			<div class="flex items-center space-x-3">
-				<div class="flex items-center space-x-2">
+			<div class="flex items-center space-x-4">
+				<div class="flex items-center space-x-3 bg-white/10 rounded-lg px-3 py-1.5">
 					<img
 						src={profile.profilePhoto ?? 'https://api.dicebear.com/9.x/thumbs/svg?seed=Amaya'}
 						alt={profile.firstName || 'User avatar'}
-						class="w-8 h-8 rounded-full"
+						class="w-8 h-8 rounded-full ring-2 ring-white/20"
 					/>
 					<span class="text-sm font-medium text-white">{profile.firstName}</span>
 				</div>
 				<button
 					type="button"
-					class="rounded-full p-2 text-white/80 hover:text-white transition-all duration-200"
+					class="rounded-lg p-2 text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
 				>
 					<Settings class="h-6 w-6" />
 				</button>

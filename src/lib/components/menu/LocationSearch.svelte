@@ -12,6 +12,7 @@
 	let gettingLocation = $state<boolean>(false);
 	let error = $state<string | null>(null);
 	let selectedPlace = $state<NominatimPlace | null>(null);
+	let nearbyLocations = $state<NominatimPlace[]>([]);
 
 	interface NominatimPlace {
 		place_id: number;
@@ -50,8 +51,6 @@
 			'addr:state'?: string;
 		};
 	}
-
-	let nearbyLocations = $state<NominatimPlace[]>([]);
 
 	async function getCurrentLocation() {
 		if (!navigator.geolocation) {
@@ -242,92 +241,126 @@
 	}
 </script>
 
-<div class="space-y-4">
+<div class="location-search-container">
 	{#if selectedPlace}
-		<div class="bg-white shadow rounded-md p-4">
+		<div class="p-4 bg-white/5">
 			<div class="flex justify-between items-center">
-				<div class="flex items-start">
-					<MapPin class="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-					<div class="ml-3">
-						<p class="text-sm font-medium text-gray-900">
-							{selectedPlace.display_name.split(',')[0]}
+				<div class="flex items-start space-x-3">
+					<MapPin class="h-5 w-5 text-white/70 mt-0.5 flex-shrink-0" />
+					<div>
+						<p class="text-white font-medium">
+							{selectedPlace.name || selectedPlace.display_name.split(',')[0]}
 						</p>
-						<p class="text-sm text-gray-500">
-							{selectedPlace.tags?.['addr:street'] || ''}{#if selectedPlace.tags?.['addr:city']}, {selectedPlace
-									.tags['addr:city']}{/if}{#if selectedPlace.tags?.['addr:state']}, {selectedPlace
-									.tags['addr:state']}{/if}
-						</p>
+						<p class="text-sm text-white/70">{selectedPlace.display_name}</p>
 					</div>
 				</div>
 				<button
-					type="button"
-					class="text-sm text-indigo-600 hover:text-indigo-500"
 					onclick={handleChange}
+					class="text-white/70 hover:text-white text-sm underline transition-colors"
 				>
 					Change
 				</button>
 			</div>
 		</div>
 	{:else}
-		<div class="flex gap-4">
-			<div class="flex-1">
-				<div class="relative">
+		<div class="p-4 space-y-4">
+			<div class="flex space-x-2">
+				<div class="flex-1 relative">
+					<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+						<Search class="h-5 w-5 text-white/50" />
+					</div>
 					<input
 						type="text"
-						placeholder="Search for a location..."
+						placeholder="Search for a restaurant or bar..."
 						bind:value={searchInput}
 						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
-						class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+						class="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
 					/>
-					<Search class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
 				</div>
+				<button
+					onclick={handleSearch}
+					disabled={searching || !searchInput.trim()}
+					class="px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:hover:bg-white/10 text-white rounded-lg transition-all flex items-center space-x-2"
+				>
+					{#if searching}
+						<Loader2 class="h-5 w-5 animate-spin" />
+						<span>Searching...</span>
+					{:else}
+						<span>Search</span>
+					{/if}
+				</button>
 			</div>
+
+			<div class="flex items-center">
+				<div class="flex-1 border-t border-white/10"></div>
+				<span class="px-3 text-white/50 text-sm">or</span>
+				<div class="flex-1 border-t border-white/10"></div>
+			</div>
+
 			<button
-				type="button"
-				class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 				onclick={getCurrentLocation}
 				disabled={gettingLocation}
+				class="w-full px-4 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:hover:bg-white/10 text-white rounded-lg transition-all flex items-center justify-center space-x-2"
 			>
 				{#if gettingLocation}
-					<Loader2 class="w-4 h-4 mr-2 animate-spin" />
-					Getting Location...
+					<Loader2 class="h-5 w-5 animate-spin" />
+					<span>Getting location...</span>
 				{:else}
-					<MapPin class="w-4 h-4 mr-2" />
-					Use My Location
+					<MapPin class="h-5 w-5" />
+					<span>Use my location</span>
 				{/if}
 			</button>
+
+			{#if error}
+				<p class="text-red-300 text-sm">{error}</p>
+			{/if}
 		</div>
 
-		{#if error}
-			<div class="text-sm text-red-600">{error}</div>
-		{/if}
-
-		{#if searching}
-			<div class="text-center py-4">
-				<Loader2 class="w-6 h-6 animate-spin mx-auto text-indigo-600" />
-				<p class="mt-2 text-sm text-gray-600">Searching for locations...</p>
-			</div>
-		{:else if nearbyLocations.length > 0}
-			<div class="bg-white shadow rounded-md">
-				<ul class="divide-y divide-gray-200">
+		{#if nearbyLocations.length > 0}
+			<div class="border-t border-white/10">
+				<div class="max-h-60 overflow-y-auto">
 					{#each nearbyLocations as place}
-						<li>
-							<button
-								class="w-full px-4 py-3 flex items-start hover:bg-gray-50 transition-colors text-left"
-								onclick={() => handlePlaceSelect(place)}
-							>
-								<MapPin class="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-								<div class="ml-3">
-									<p class="text-sm font-medium text-gray-900">
-										{place.display_name.split(',')[0]}
+						<button
+							onclick={() => handlePlaceSelect(place)}
+							class="w-full p-4 text-left hover:bg-white/5 transition-colors flex items-start space-x-3"
+						>
+							<MapPin class="h-5 w-5 text-white/70 mt-0.5 flex-shrink-0" />
+							<div>
+								<p class="text-white font-medium">
+									{place.name || place.display_name.split(',')[0]}
+								</p>
+								<p class="text-sm text-white/70">{place.display_name}</p>
+								{#if place.distance !== undefined}
+									<p class="text-sm text-white/50 mt-1">
+										{place.distance.toFixed(1)} km away
 									</p>
-									<p class="text-sm text-gray-500">{place.display_name}</p>
-								</div>
-							</button>
-						</li>
+								{/if}
+							</div>
+						</button>
 					{/each}
-				</ul>
+				</div>
 			</div>
 		{/if}
 	{/if}
 </div>
+
+<style>
+	/* Custom scrollbar for Webkit browsers */
+	:global(.location-search-container .max-h-60) {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+	}
+
+	:global(.location-search-container .max-h-60::-webkit-scrollbar) {
+		width: 6px;
+	}
+
+	:global(.location-search-container .max-h-60::-webkit-scrollbar-track) {
+		background: transparent;
+	}
+
+	:global(.location-search-container .max-h-60::-webkit-scrollbar-thumb) {
+		background-color: rgba(255, 255, 255, 0.2);
+		border-radius: 3px;
+	}
+</style>

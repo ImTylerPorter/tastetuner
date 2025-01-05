@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Upload } from 'lucide-svelte';
+	import { Upload, MapPin } from 'lucide-svelte';
 	import MobileMenuScanner from './MobileMenuScanner.svelte';
 	import DrinkRecommendations from '$lib/components/drink/DrinkRecommendations.svelte';
 	import LocationSearch from './LocationSearch.svelte';
@@ -23,7 +23,7 @@
 	let firstName = page.data.profile?.firstName || 'you';
 	let selectedLocation = $state<LocationInfo | null>(null);
 
-	onMount(() => {
+	$effect(() => {
 		if (browser) {
 			isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 		}
@@ -107,15 +107,18 @@
 		locationInfo={selectedLocation}
 	/>
 {:else}
-	<div class="space-y-6">
-		<div class="max-w-xl mx-auto">
-			<h2 class="text-lg font-medium text-gray-900 mb-4">Location</h2>
+	<div class="space-y-8">
+		<div class="w-full max-w-2xl mx-auto">
+			<div class="flex items-center space-x-2 mb-3">
+				<MapPin class="w-5 h-5 text-white/70" />
+				<h3 class="text-lg font-medium text-white">Location</h3>
+			</div>
 			<LocationSearch onSelect={handleLocationSelect} />
 		</div>
 
 		{#if selectedLocation}
 			<div
-				class="max-w-xl mx-auto"
+				class="w-full max-w-2xl mx-auto"
 				role="region"
 				aria-label="File upload area"
 				ondrop={handleDrop}
@@ -124,9 +127,9 @@
 			>
 				<label
 					for="file-upload"
-					class="relative block p-12 text-center border-2 rounded-lg cursor-pointer {dragActive
-						? 'border-indigo-500 bg-indigo-50'
-						: 'border-gray-300 hover:border-indigo-500'}"
+					class="relative block p-12 text-center border-2 rounded-xl cursor-pointer transition-all duration-200 {dragActive
+						? 'border-white/40 bg-white/5'
+						: 'border-white/20 hover:border-white/40 hover:bg-white/5'}"
 				>
 					<input
 						id="file-upload"
@@ -136,29 +139,43 @@
 						class="sr-only"
 						onchange={handleFileSelect}
 					/>
-					<div class="space-y-2">
-						<Upload class="mx-auto h-12 w-12 text-gray-400 {dragActive ? 'text-indigo-500' : ''}" />
+					<div class="space-y-3">
+						<Upload class="mx-auto h-12 w-12 text-white/70 {dragActive ? 'text-white' : ''}" />
 						<div class="text-sm">
-							<span class="font-medium text-indigo-600">Upload a menu photo</span>
-							<span class="text-gray-500"> or drag and drop</span>
+							<span class="font-medium text-white">Upload a menu photo</span>
+							<span class="text-white/70"> or drag and drop</span>
 						</div>
-						<p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+						<p class="text-xs text-white/50">PNG, JPG, GIF up to 10MB</p>
 					</div>
 				</label>
 			</div>
 		{/if}
 
 		{#if analysisResult?.recommendations}
-			<DrinkRecommendations recommendations={analysisResult.recommendations} {firstName} />
+			<div class="w-full max-w-2xl mx-auto">
+				<DrinkRecommendations recommendations={analysisResult.recommendations} {firstName} />
+			</div>
 		{/if}
 	</div>
 {/if}
 
 {#if error}
 	<div
-		class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+		class="mt-6 bg-red-500/10 border border-red-500/20 text-red-200 px-4 py-3 rounded-lg"
 		role="alert"
 	>
 		<span class="block sm:inline">{error}</span>
 	</div>
 {/if}
+
+<style>
+	:global(.location-search-container) {
+		background-color: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 0.75rem;
+		box-shadow:
+			0 1px 3px rgba(0, 0, 0, 0.1),
+			0 1px 2px rgba(0, 0, 0, 0.06);
+		overflow: hidden;
+	}
+</style>

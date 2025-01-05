@@ -44,17 +44,32 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-500 via-purple-400 to-blue-500">
-	<NavBar {activeSection} {profile} />
+	<div class="min-h-screen backdrop-blur-xl bg-black/10">
+		<NavBar {activeSection} {profile} />
 
-	<main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-		<ErrorDisplay message={errorMessage} />
+		<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
+			{#if errorMessage}
+				<div class="mb-8">
+					<ErrorDisplay message={errorMessage} />
+				</div>
+			{/if}
 
-		{#if activeSection === 'scan'}
-			<ScanSection {recommendations} onScan={handleScan} onError={handleError} />
-		{:else if activeSection === 'history'}
-			<HistorySection {history} />
-		{:else if activeSection === 'profile'}
-			<ProfileSection {profile} />
-		{/if}
-	</main>
+			<div class="transition-all duration-300 ease-in-out space-y-8">
+				{#if activeSection === 'scan'}
+					<ScanSection {recommendations} onScan={handleScan} onError={handleError} />
+				{:else if activeSection === 'history'}
+					<HistorySection {history} />
+				{:else if activeSection === 'profile'}
+					<ProfileSection {profile} />
+				{/if}
+			</div>
+		</main>
+	</div>
 </div>
+
+<style>
+	:global(body) {
+		overflow-x: hidden;
+		background: linear-gradient(to bottom right, #7e5bef, #a78bfa, #3b82f6);
+	}
+</style>
