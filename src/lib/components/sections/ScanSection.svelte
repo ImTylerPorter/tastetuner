@@ -2,11 +2,12 @@
 	import Section from './Section.svelte';
 	import MenuScanner from '$lib/components/menu/MenuScanner.svelte';
 	import MenuRecommendations from '$lib/components/menu/MenuRecommendations.svelte';
+	import type { AIMenuAnalysisResult } from '$lib/services/aiMenuAnalysis';
 
 	let { onScan, onError, recommendations } = $props<{
-		onScan: (text: string) => void;
+		onScan: (result: AIMenuAnalysisResult) => void;
 		onError: (message: string) => void;
-		recommendations: { matches: any[]; suggestions: any[] } | null;
+		recommendations: NonNullable<AIMenuAnalysisResult['recommendations']> | null;
 	}>();
 </script>
 
@@ -17,10 +18,7 @@
 
 	{#if recommendations}
 		<Section title="Recommendations">
-			<MenuRecommendations
-				matches={recommendations.matches}
-				suggestions={recommendations.suggestions}
-			/>
+			<MenuRecommendations {recommendations} />
 		</Section>
 	{/if}
 </div>

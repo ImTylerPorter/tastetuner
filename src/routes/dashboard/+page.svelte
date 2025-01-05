@@ -3,6 +3,7 @@
 	import ScanSection from '$lib/components/sections/ScanSection.svelte';
 	import ErrorDisplay from '$lib/components/ui/ErrorDisplay.svelte';
 	import type { Profile } from '$lib/types';
+	import type { AIMenuAnalysisResult } from '$lib/services/aiMenuAnalysis';
 
 	let { data } = $props<{
 		data: {
@@ -13,20 +14,11 @@
 	let { profile } = $derived(data);
 
 	let errorMessage = $state<string | null>(null);
-	let recommendations = $state<{ matches: any[]; suggestions: any[] } | null>(null);
+	let recommendations = $state<NonNullable<AIMenuAnalysisResult['recommendations']> | null>(null);
 
-	async function handleScan(text: string) {
+	function handleScan(result: AIMenuAnalysisResult) {
 		try {
-			recommendations = null;
-			const response = await fetch('/api/analyze-menu', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ text })
-			});
-
-			if (!response.ok) throw new Error('Failed to analyze menu');
-			const data = await response.json();
-			recommendations = data.recommendations;
+			recommendations = result.recommendations || null;
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : 'An error occurred';
 		}
@@ -38,7 +30,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-purple-500 via-purple-400 to-blue-500">
+<div class="min-h-screen bg-gradient-to-br from-purple-500 via-highlight/30 to-blue-500">
 	<div class="min-h-screen backdrop-blur-xl bg-black/10">
 		<NavBar {profile} />
 
@@ -58,6 +50,7 @@
 
 <style>
 	:global(body) {
-		@apply overflow-x-hidden bg-gradient-to-br from-purple-500 via-purple-400 to-blue-500;
+		overflow-x: hidden;
+		background: linear-gradient(to bottom right, #7e5bef, rgba(255, 255, 255, 0.3), #3b82f6);
 	}
 </style>

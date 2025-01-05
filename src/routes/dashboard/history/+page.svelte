@@ -11,7 +11,6 @@
 	}>();
 
 	let { profile, history } = $derived(data);
-	console.log(history);
 </script>
 
 <div class="min-h-screen backdrop-blur-xl bg-black/10">

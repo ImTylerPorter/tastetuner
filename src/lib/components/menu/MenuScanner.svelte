@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Upload, MapPin } from 'lucide-svelte';
+	import { Upload, MapPin, Loader2 } from 'lucide-svelte';
 	import MobileMenuScanner from './MobileMenuScanner.svelte';
 	import DrinkRecommendations from '$lib/components/drink/DrinkRecommendations.svelte';
 	import LocationSearch from './LocationSearch.svelte';
@@ -7,10 +7,10 @@
 	import { onMount } from 'svelte';
 	import { analyzeMenuWithAI } from '$lib/services/aiMenuAnalysis';
 	import type { AIMenuAnalysisResult, LocationInfo } from '$lib/services/aiMenuAnalysis';
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 
 	let { onScan, onError } = $props<{
-		onScan: (text: string) => void;
+		onScan: (result: AIMenuAnalysisResult) => void;
 		onError: (message: string) => void;
 	}>();
 
@@ -20,8 +20,9 @@
 	let error = $state<string | null>(null);
 	let isMobile = $state<boolean>(false);
 	let analysisResult = $state<AIMenuAnalysisResult | null>(null);
-	let firstName = page.data.profile?.firstName || 'you';
+	let firstName = $derived($page.data?.profile?.firstName || 'you');
 	let selectedLocation = $state<LocationInfo | null>(null);
+	let uploadProgress = $state<string>('');
 
 	$effect(() => {
 		if (browser) {
@@ -30,6 +31,8 @@
 	});
 
 	async function handleFile(file: File) {
+		console.log('Handling file:', { name: file.name, type: file.type, size: file.size });
+
 		if (!file.type.startsWith('image/')) {
 			error = 'Please upload an image file';
 			onError(error);
@@ -42,29 +45,33 @@
 			return;
 		}
 
+		if (file.size > 10 * 1024 * 1024) {
+			// 10MB limit
+			error = 'File size must be less than 10MB';
+			onError(error);
+			return;
+		}
+
 		processing = true;
 		error = null;
 
 		try {
+			console.log('Starting menu analysis with location:', selectedLocation);
+			uploadProgress = 'Processing image...';
 			analysisResult = await analyzeMenuWithAI(file, selectedLocation);
-			const menuText = analysisResult.drinks
-				.map(
-					(drink) =>
-						`${drink.name} - ${drink.type}${
-							(drink as any).style ? ` - ${(drink as any).style}` : ''
-						}${drink.alcoholContent ? ` (${drink.alcoholContent}% ABV)` : ''}${
-							(drink as any).ibu ? ` IBU: ${(drink as any).ibu}` : ''
-						}`
-				)
-				.join('\n');
+			uploadProgress = 'Analyzing menu...';
+			console.log('Analysis result:', analysisResult);
 
-			onScan(menuText);
+			if (analysisResult) {
+				onScan(analysisResult);
+			}
 		} catch (err) {
+			console.error('Menu analysis error details:', err);
 			error = err instanceof Error ? err.message : 'Failed to analyze menu';
 			onError(error);
-			console.error('Menu analysis error:', err);
 		} finally {
 			processing = false;
+			uploadProgress = '';
 		}
 	}
 
@@ -74,6 +81,7 @@
 
 		const file = e.dataTransfer?.files[0];
 		if (file) {
+			console.log('File dropped:', { name: file.name, type: file.type, size: file.size });
 			handleFile(file);
 		}
 	}
@@ -128,8 +136,8 @@
 				<label
 					for="file-upload"
 					class="relative block p-12 text-center border-2 rounded-xl cursor-pointer transition-all duration-200 {dragActive
-						? 'border-white/40 bg-white/5'
-						: 'border-white/20 hover:border-white/40 hover:bg-white/5'}"
+						? 'border-highlight bg-white/5'
+						: 'border-white/20 hover:border-highlight hover:bg-white/5'}"
 				>
 					<input
 						id="file-upload"
@@ -138,15 +146,25 @@
 						accept="image/*"
 						class="sr-only"
 						onchange={handleFileSelect}
+						disabled={processing}
 					/>
-					<div class="space-y-3">
-						<Upload class="mx-auto h-12 w-12 text-white/70 {dragActive ? 'text-white' : ''}" />
-						<div class="text-sm">
-							<span class="font-medium text-white">Upload a menu photo</span>
-							<span class="text-white/70"> or drag and drop</span>
+					{#if processing}
+						<div class="flex flex-col items-center justify-center space-y-3">
+							<Loader2 class="w-12 h-12 text-highlight animate-spin" />
+							<p class="text-sm font-medium text-white">{uploadProgress}</p>
 						</div>
-						<p class="text-xs text-white/50">PNG, JPG, GIF up to 10MB</p>
-					</div>
+					{:else}
+						<div class="space-y-3">
+							<Upload
+								class="mx-auto h-12 w-12 text-white/70 {dragActive ? 'text-highlight' : ''}"
+							/>
+							<div class="text-sm">
+								<span class="font-medium text-white">Upload a menu photo</span>
+								<span class="text-white/70"> or drag and drop</span>
+							</div>
+							<p class="text-xs text-white/50">PNG, JPG, GIF up to 10MB</p>
+						</div>
+					{/if}
 				</label>
 			</div>
 		{/if}

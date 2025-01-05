@@ -98,10 +98,43 @@ async function findActiveMenu(locationId: string) {
 
 export async function POST({ request, locals }) {
 	try {
+		console.log('Received analyze-menu request');
+		const contentType = request.headers.get('Content-Type');
+		console.log('Request Content-Type:', contentType);
+
 		const data = await request.json();
+		console.log('Request data keys:', Object.keys(data));
+		console.log('Request data types:', Object.keys(data).map(key => `${key}: ${typeof data[key]}`));
+
+		if (!data.image) {
+			console.error('No image data in request');
+			console.log('Full request data:', JSON.stringify(data, null, 2));
+			throw new Error('No image data provided');
+		}
+
+		if (typeof data.image !== 'string') {
+			console.error('Image data is not a string:', typeof data.image);
+			throw new Error('Invalid image data type');
+		}
+
+		if (!data.image.startsWith('data:image/')) {
+			console.error('Invalid image format, data starts with:', data.image.substring(0, 50));
+			throw new Error('Invalid image format');
+		}
+
 		const imageData = data.image.split(',')[1]; // Remove data URL prefix
-		const base64Image = imageData;
+		if (!imageData) {
+			console.error('No image data after splitting');
+			throw new Error('Invalid image data format');
+		}
+		console.log('Image data length:', imageData.length);
+
 		const locationInfo = data.location as LocationInfo;
+		if (!locationInfo) {
+			console.error('No location info in request');
+			throw new Error('No location information provided');
+		}
+		console.log('Location info:', locationInfo);
 
 		// Get user preferences if user is logged in
 		let userPreferences = null;
@@ -148,11 +181,10 @@ export async function POST({ request, locals }) {
 							},
 							{
 								role: 'user',
-								content: 'Return ONLY a JSON object with the recommendations. Do not include any markdown formatting or additional text.\n\n' +
-									JSON.stringify({
-										drinks: menuData.drinks,
-										userPreferences
-									})
+								content: JSON.stringify({
+									drinks: menuData.drinks,
+									userPreferences
+								})
 							}
 						],
 						temperature: 0.3
@@ -185,7 +217,7 @@ export async function POST({ request, locals }) {
 				Authorization: `Bearer ${OPENAI_API_KEY}`
 			},
 			body: JSON.stringify({
-				model: 'gpt-4o',
+				model: 'gpt-4-vision-preview',
 				messages: [
 					{
 						role: 'system',
@@ -201,7 +233,7 @@ export async function POST({ request, locals }) {
 							{
 								type: 'image_url',
 								image_url: {
-									url: `data:image/jpeg;base64,${base64Image}`
+									url: `data:image/jpeg;base64,${imageData}`
 								}
 							}
 						]
@@ -250,11 +282,10 @@ export async function POST({ request, locals }) {
 						},
 						{
 							role: 'user',
-							content: 'Return ONLY a JSON object with the recommendations. Do not include any markdown formatting or additional text.\n\n' +
-								JSON.stringify({
-									drinks: menuAnalysis.drinks,
-									userPreferences
-								})
+							content: JSON.stringify({
+								drinks: menuAnalysis.drinks,
+								userPreferences
+							})
 						}
 					],
 					temperature: 0.3
