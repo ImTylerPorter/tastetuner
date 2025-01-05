@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { User, Lock, Mail } from 'lucide-svelte';
-	import ErrorDisplay from './ErrorDisplay.svelte';
+	import ErrorDisplay from '$lib/components/ui/ErrorDisplay.svelte';
 
 	let { onHandleSubmit } = $props<{ onHandleSubmit: (formData: FormData) => Promise<void> }>();
 

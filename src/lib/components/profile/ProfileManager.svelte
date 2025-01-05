@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import type { Profile } from '$lib/types';
 	import { drinkType, flavorPreference, beerStyle, cocktailStyle, wineStyle } from '$lib/db/schema';
-	import ErrorDisplay from './ErrorDisplay.svelte';
+	import ErrorDisplay from '$lib/components/ui/ErrorDisplay.svelte';
 	import { slide } from 'svelte/transition';
 
 	let { profile } = $props<{ profile: Profile }>();

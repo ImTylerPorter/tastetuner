@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Upload, Loader2, MapPin } from 'lucide-svelte';
+	import { Upload } from 'lucide-svelte';
 	import MobileMenuScanner from './MobileMenuScanner.svelte';
-	import DrinkRecommendations from './DrinkRecommendations.svelte';
+	import DrinkRecommendations from '$lib/components/drink/DrinkRecommendations.svelte';
 	import LocationSearch from './LocationSearch.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { analyzeMenuWithAI } from '$lib/services/aiMenuAnalysis';
 	import type { AIMenuAnalysisResult, LocationInfo } from '$lib/services/aiMenuAnalysis';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let { onScan, onError } = $props<{
 		onScan: (text: string) => void;
@@ -20,7 +20,7 @@
 	let error = $state<string | null>(null);
 	let isMobile = $state<boolean>(false);
 	let analysisResult = $state<AIMenuAnalysisResult | null>(null);
-	let firstName = $page.data.profile?.firstName || 'you';
+	let firstName = page.data.profile?.firstName || 'you';
 	let selectedLocation = $state<LocationInfo | null>(null);
 
 	onMount(() => {

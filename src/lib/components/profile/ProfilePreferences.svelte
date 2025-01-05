@@ -5,7 +5,7 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { slide } from 'svelte/transition';
-	import Logo from '$lib/components/Logo.svelte';
+	import Logo from '$lib/components/ui/Logo.svelte';
 
 	type DrinkType = (typeof drinkType.enumValues)[number];
 	type FlavorPreference = (typeof flavorPreference.enumValues)[number];

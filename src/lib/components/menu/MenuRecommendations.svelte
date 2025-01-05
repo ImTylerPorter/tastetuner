@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Star, ThumbsUp, Award } from 'lucide-svelte';
 	import type { Drink } from '$lib/types';
-	import DrinkRating from './DrinkRating.svelte';
+	import DrinkRating from '$lib/components/drink/DrinkRating.svelte';
 
 	let { matches, suggestions } = $props<{
 		matches: Drink[];

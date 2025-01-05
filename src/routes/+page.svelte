@@ -1,13 +1,15 @@
 <script lang="ts">
-	import { Beer, Martini } from 'lucide-svelte';
-	import AuthForm from '$lib/components/AuthForm.svelte';
-	import type { SupabaseClient } from '@supabase/supabase-js';
-	import { userProfile } from '$lib/stores/userProfile';
+	import { page } from '$app/stores';
+	import type { Page } from '@sveltejs/kit';
+	import AuthForm from '$lib/components/auth/AuthForm.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import Logo from '$lib/components/ui/Logo.svelte';
+	import ProfilePreferences from '$lib/components/profile/ProfilePreferences.svelte';
+	import type { SupabaseClient } from '@supabase/supabase-js';
 	import type { Profile } from '$lib/types';
-	import Logo from '$lib/components/Logo.svelte';
-	import ProfilePreferences from '$lib/components/ProfilePreferences.svelte';
+	import { userProfile } from '$lib/stores/userProfile';
 
 	let { data } = $props<{
 		data: {
@@ -31,7 +33,7 @@
 
 	async function handleAuth(formData: FormData) {
 		try {
-			const response = await fetch(page.url.pathname, {
+			const response = await fetch($page.url.pathname, {
 				method: 'POST',
 				body: formData
 			});
