@@ -1,0 +1,1 @@
+CREATE TYPE "public"."location_type" AS ENUM('restaurant', 'brewery', 'taproom', 'bar', 'other');

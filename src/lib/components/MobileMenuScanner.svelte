@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { Camera, X, RotateCcw, Check } from 'lucide-svelte';
-	import { createWorker } from 'tesseract.js';
 	import { fade, slide } from 'svelte/transition';
 	import { onDestroy, onMount } from 'svelte';
+	import { analyzeMenuWithAI } from '$lib/services/aiMenuAnalysis';
+	import type { LocationInfo } from '$lib/services/aiMenuAnalysis';
 
-	let { onScan, onError } = $props<{
+	let { onScan, onError, locationInfo } = $props<{
 		onScan: (text: string) => void;
 		onError: (message: string) => void;
+		locationInfo?: LocationInfo | null;
 	}>();
 
 	let stream = $state<MediaStream | null>(null);
@@ -66,25 +68,39 @@
 
 	async function processImage() {
 		if (!previewImage) return;
+		if (!locationInfo) {
+			error = 'Please select a location first';
+			onError(error);
+			return;
+		}
 
 		processing = true;
 		error = null;
 
 		try {
-			const worker = await createWorker('eng');
-			const result = await worker.recognize(previewImage);
-			await worker.terminate();
+			// Convert base64 to blob
+			const response = await fetch(previewImage);
+			const blob = await response.blob();
+			const file = new File([blob], 'menu.jpg', { type: 'image/jpeg' });
 
-			if (result.data.text.trim()) {
-				onScan(result.data.text);
-			} else {
-				error = 'No text was found in the image. Please try again.';
-				onError(error);
-			}
+			// Analyze the menu using GPT-4 Vision
+			const result = await analyzeMenuWithAI(file, locationInfo);
+			const menuText = result.drinks
+				.map(
+					(drink) =>
+						`${drink.name} - ${drink.type}${
+							(drink as any).style ? ` - ${(drink as any).style}` : ''
+						}${drink.alcoholContent ? ` (${drink.alcoholContent}% ABV)` : ''}${
+							(drink as any).ibu ? ` IBU: ${(drink as any).ibu}` : ''
+						}`
+				)
+				.join('\n');
+
+			onScan(menuText);
 		} catch (err) {
-			error = 'Failed to process the image. Please try again.';
+			error = err instanceof Error ? err.message : 'Failed to analyze the menu';
 			onError(error);
-			console.error('OCR error:', err);
+			console.error('Menu analysis error:', err);
 		} finally {
 			processing = false;
 		}

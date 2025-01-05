@@ -53,52 +53,58 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gradient-to-br from-purple-500 via-purple-400 to-blue-500">
 	<!-- Navigation -->
-	<nav class="bg-white shadow-sm">
+	<nav class="bg-transparent">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div class="flex h-16 justify-between">
-				<div class="flex">
-					<div class="flex flex-shrink-0 items-center w-32">
+			<div class="flex h-16 justify-between items-center">
+				<div class="flex items-center">
+					<div class="flex-shrink-0 w-32">
 						<Logo />
 					</div>
-					<div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+					<div class="hidden sm:ml-6 sm:flex sm:space-x-6">
 						<button
-							class="inline-flex items-center px-1 pt-1 text-sm font-medium {activeSection ===
-							'scan'
-								? 'border-indigo-500 text-gray-900 border-b-2'
-								: 'text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 border-transparent'}"
+							class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
+								activeSection === 'scan' ? 'text-white' : 'text-white/80 hover:text-white'
+							}`}
 							onclick={() => (activeSection = 'scan')}
 						>
-							<Camera class="w-5 h-5 mr-1" />
+							<Camera class="w-5 h-5 mr-2" />
 							Scan Menu
 						</button>
 						<button
-							class="inline-flex items-center px-1 pt-1 text-sm font-medium {activeSection ===
-							'history'
-								? 'border-indigo-500 text-gray-900 border-b-2'
-								: 'text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 border-transparent'}"
+							class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
+								activeSection === 'history' ? 'text-white' : 'text-white/80 hover:text-white'
+							}`}
 							onclick={() => (activeSection = 'history')}
 						>
-							<History class="w-5 h-5 mr-1" />
+							<History class="w-5 h-5 mr-2" />
 							History
 						</button>
 						<button
-							class="inline-flex items-center px-1 pt-1 text-sm font-medium {activeSection ===
-							'profile'
-								? 'border-indigo-500 text-gray-900 border-b-2'
-								: 'text-gray-500 hover:border-gray-300 hover:text-gray-700 border-b-2 border-transparent'}"
+							class={`inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-200 ${
+								activeSection === 'profile' ? 'text-white' : 'text-white/80 hover:text-white'
+							}`}
 							onclick={() => (activeSection = 'profile')}
 						>
-							<User class="w-5 h-5 mr-1" />
+							<User class="w-5 h-5 mr-2" />
 							Profile
 						</button>
 					</div>
 				</div>
-				<div class="flex items-center">
+
+				<div class="flex items-center space-x-3">
+					<div class="flex items-center space-x-2">
+						<img
+							src={profile.profilePhoto ?? 'https://api.dicebear.com/9.x/thumbs/svg?seed=Amaya'}
+							alt={profile.firstName || 'User avatar'}
+							class="w-8 h-8 rounded-full"
+						/>
+						<span class="text-sm font-medium text-white">{profile.firstName}</span>
+					</div>
 					<button
 						type="button"
-						class="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+						class="rounded-full p-2 text-white/80 hover:text-white transition-all duration-200"
 					>
 						<Settings class="h-6 w-6" />
 					</button>
@@ -113,17 +119,17 @@
 
 		{#if activeSection === 'scan'}
 			<div class="space-y-8">
-				<div class="bg-white shadow sm:rounded-lg">
-					<div class="px-4 py-5 sm:p-6">
-						<h2 class="text-xl font-semibold mb-4">Scan Menu</h2>
+				<div class="bg-white/5 rounded-3xl">
+					<div class="px-8 py-6">
+						<h2 class="text-4xl font-semibold mb-8 text-white">Scan Menu</h2>
 						<MenuScanner onScan={handleScan} onError={handleError} />
 					</div>
 				</div>
 
 				{#if recommendations}
-					<div class="bg-white shadow sm:rounded-lg">
-						<div class="px-4 py-5 sm:p-6">
-							<h2 class="text-xl font-semibold mb-4">Recommendations</h2>
+					<div class="bg-white/5 rounded-3xl">
+						<div class="px-8 py-6">
+							<h2 class="text-4xl font-semibold mb-8 text-white">Recommendations</h2>
 							<MenuRecommendations
 								matches={recommendations.matches}
 								suggestions={recommendations.suggestions}
@@ -133,20 +139,20 @@
 				{/if}
 			</div>
 		{:else if activeSection === 'history'}
-			<div class="bg-white shadow sm:rounded-lg">
-				<div class="px-4 py-5 sm:p-6">
-					<h2 class="text-xl font-semibold mb-4">Drink History</h2>
+			<div class="bg-white/5 rounded-3xl">
+				<div class="px-8 py-6">
+					<h2 class="text-4xl font-semibold mb-8 text-white">Drink History</h2>
 					<DrinkHistory {history} />
 				</div>
 			</div>
 		{:else if activeSection === 'profile'}
-			<div class="bg-white shadow sm:rounded-lg">
-				<div class="px-4 py-5 sm:p-6">
-					<h2 class="text-xl font-semibold mb-4">Profile & Preferences</h2>
+			<div class="bg-white/5 rounded-3xl">
+				<div class="px-8 py-6">
+					<h2 class="text-4xl font-semibold mb-8 text-white">Profile & Preferences</h2>
 					{#if profile}
 						<ProfileManager {profile} />
 					{:else}
-						<p class="text-gray-500">Loading profile...</p>
+						<p class="text-white/70">Loading profile...</p>
 					{/if}
 				</div>
 			</div>

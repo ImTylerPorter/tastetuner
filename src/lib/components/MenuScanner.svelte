@@ -1,9 +1,13 @@
 <script lang="ts">
-	import { createWorker } from 'tesseract.js';
-	import { Upload, Loader2 } from 'lucide-svelte';
+	import { Upload, Loader2, MapPin } from 'lucide-svelte';
 	import MobileMenuScanner from './MobileMenuScanner.svelte';
+	import DrinkRecommendations from './DrinkRecommendations.svelte';
+	import LocationSearch from './LocationSearch.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { analyzeMenuWithAI } from '$lib/services/aiMenuAnalysis';
+	import type { AIMenuAnalysisResult, LocationInfo } from '$lib/services/aiMenuAnalysis';
+	import { page } from '$app/stores';
 
 	let { onScan, onError } = $props<{
 		onScan: (text: string) => void;
@@ -11,11 +15,13 @@
 	}>();
 
 	let fileInput = $state<HTMLInputElement>();
-	let textInput = $state<HTMLTextAreaElement>();
-	let dragActive = $state(false);
-	let processing = $state(false);
+	let dragActive = $state<boolean>(false);
+	let processing = $state<boolean>(false);
 	let error = $state<string | null>(null);
-	let isMobile = $state(false);
+	let isMobile = $state<boolean>(false);
+	let analysisResult = $state<AIMenuAnalysisResult | null>(null);
+	let firstName = $page.data.profile?.firstName || 'you';
+	let selectedLocation = $state<LocationInfo | null>(null);
 
 	onMount(() => {
 		if (browser) {
@@ -30,27 +36,33 @@
 			return;
 		}
 
+		if (!selectedLocation) {
+			error = 'Please select a location first';
+			onError(error);
+			return;
+		}
+
 		processing = true;
 		error = null;
 
 		try {
-			const worker = await createWorker('eng');
-			const result = await worker.recognize(file);
-			await worker.terminate();
+			analysisResult = await analyzeMenuWithAI(file, selectedLocation);
+			const menuText = analysisResult.drinks
+				.map(
+					(drink) =>
+						`${drink.name} - ${drink.type}${
+							(drink as any).style ? ` - ${(drink as any).style}` : ''
+						}${drink.alcoholContent ? ` (${drink.alcoholContent}% ABV)` : ''}${
+							(drink as any).ibu ? ` IBU: ${(drink as any).ibu}` : ''
+						}`
+				)
+				.join('\n');
 
-			if (result.data.text.trim()) {
-				onScan(result.data.text);
-				if (textInput) {
-					textInput.value = result.data.text;
-				}
-			} else {
-				error = 'No text was found in the image. Please try again or paste the menu text manually.';
-				onError(error);
-			}
+			onScan(menuText);
 		} catch (err) {
-			error = 'Failed to process the image. Please try again or paste the menu text manually.';
+			error = err instanceof Error ? err.message : 'Failed to analyze menu';
 			onError(error);
-			console.error('OCR error:', err);
+			console.error('Menu analysis error:', err);
 		} finally {
 			processing = false;
 		}
@@ -82,93 +94,63 @@
 		}
 	}
 
-	function handleTextSubmit() {
-		const text = textInput?.value.trim();
-		if (text) {
-			onScan(text);
-		} else {
-			error = 'Please enter some menu text';
-			onError(error);
-		}
-	}
-
-	function handleMobileScan(text: string) {
-		if (textInput) {
-			textInput.value = text;
-		}
-		onScan(text);
+	function handleLocationSelect(location: LocationInfo) {
+		selectedLocation = location;
+		error = null;
 	}
 </script>
 
 {#if isMobile}
 	<MobileMenuScanner
-		onScan={(text) => handleMobileScan(text)}
+		{onScan}
 		onError={(message) => (error = message)}
+		locationInfo={selectedLocation}
 	/>
 {:else}
 	<div class="space-y-6">
-		<div
-			class="max-w-xl mx-auto"
-			role="region"
-			aria-label="File upload area"
-			ondrop={handleDrop}
-			ondragover={handleDragOver}
-			ondragleave={handleDragLeave}
-		>
-			<label
-				for="file-upload"
-				class="relative block p-12 text-center border-2 rounded-lg cursor-pointer {dragActive
-					? 'border-indigo-500 bg-indigo-50'
-					: 'border-gray-300 hover:border-indigo-500'}"
-			>
-				<input
-					id="file-upload"
-					bind:this={fileInput}
-					type="file"
-					accept="image/*"
-					class="sr-only"
-					onchange={handleFileSelect}
-				/>
-				<div class="space-y-2">
-					<Upload class="mx-auto h-12 w-12 text-gray-400 {dragActive ? 'text-indigo-500' : ''}" />
-					<div class="text-sm">
-						<span class="font-medium text-indigo-600">Upload a menu photo</span>
-						<span class="text-gray-500"> or drag and drop</span>
-					</div>
-					<p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-				</div>
-			</label>
+		<div class="max-w-xl mx-auto">
+			<h2 class="text-lg font-medium text-gray-900 mb-4">Location</h2>
+			<LocationSearch onSelect={handleLocationSelect} />
 		</div>
 
-		<div class="max-w-xl mx-auto">
-			<label for="menu-text" class="block text-sm font-medium text-gray-700">
-				Or paste menu text
-			</label>
-			<div class="mt-1">
-				<textarea
-					id="menu-text"
-					bind:this={textInput}
-					rows="4"
-					class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-					placeholder="Paste the menu text here..."
-				></textarea>
-			</div>
-			<div class="mt-2 flex justify-end">
-				<button
-					type="button"
-					class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-					onclick={handleTextSubmit}
-					disabled={processing}
+		{#if selectedLocation}
+			<div
+				class="max-w-xl mx-auto"
+				role="region"
+				aria-label="File upload area"
+				ondrop={handleDrop}
+				ondragover={handleDragOver}
+				ondragleave={handleDragLeave}
+			>
+				<label
+					for="file-upload"
+					class="relative block p-12 text-center border-2 rounded-lg cursor-pointer {dragActive
+						? 'border-indigo-500 bg-indigo-50'
+						: 'border-gray-300 hover:border-indigo-500'}"
 				>
-					{#if processing}
-						<Loader2 class="w-4 h-4 mr-2 animate-spin" />
-						Processing...
-					{:else}
-						Get Recommendations
-					{/if}
-				</button>
+					<input
+						id="file-upload"
+						bind:this={fileInput}
+						type="file"
+						accept="image/*"
+						class="sr-only"
+						onchange={handleFileSelect}
+					/>
+					<div class="space-y-2">
+						<Upload class="mx-auto h-12 w-12 text-gray-400 {dragActive ? 'text-indigo-500' : ''}" />
+						<div class="text-sm">
+							<span class="font-medium text-indigo-600">Upload a menu photo</span>
+							<span class="text-gray-500"> or drag and drop</span>
+						</div>
+						<p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+					</div>
+				</label>
 			</div>
-		</div>
+		{/if}
+
+		{#if analysisResult?.recommendations}
+			<DrinkRecommendations recommendations={analysisResult.recommendations} {firstName} />
+		{/if}
 	</div>
 {/if}
 

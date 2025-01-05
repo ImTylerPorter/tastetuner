@@ -17,6 +17,9 @@ import { relations } from 'drizzle-orm';
 export const drinkType = pgEnum('drink_type', ['beer', 'cocktail', 'spirit', 'wine', 'non-alcoholic']);
 export const flavorPreference = pgEnum('flavor_preference', ['sweet', 'bitter', 'sour', 'spicy', 'umami', 'salty']);
 
+// Add location type enum
+export const locationType = pgEnum('location_type', ['restaurant', 'brewery', 'taproom', 'bar', 'other']);
+
 // Add new enum for drink styles
 export const beerStyle = pgEnum('beer_style', [
   'ipa', 'pilsner', 'stout', 'porter', 'lager', 'wheat', 'sour', 'pale_ale'
@@ -59,8 +62,10 @@ export const drinks = pgTable('drinks', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   type: drinkType('type').notNull(),
+  style: varchar('style', { length: 100 }),
   description: text('description'),
   alcoholContent: integer('alcohol_content'),
+  ibu: integer('ibu'),
   brand: varchar('brand', { length: 100 }),
   isSeasonal: boolean('is_seasonal').default(false),
   isExclusive: boolean('is_exclusive').default(false)
@@ -137,6 +142,29 @@ export const menuCache = pgTable('menu_cache', {
 	expiresAt: timestamp('expires_at').notNull()
 });
 
+// Menu and location tables
+export const locations = pgTable('locations', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: varchar('name', { length: 255 }).notNull(),
+	type: locationType('type').notNull(),
+	address: text('address'),
+	city: varchar('city', { length: 100 }),
+	state: varchar('state', { length: 50 }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
+export const menus = pgTable('menus', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	locationId: uuid('location_id').references(() => locations.id).notNull(),
+	menuData: jsonb('menu_data').notNull(),
+	isActive: boolean('is_active').default(true),
+	validFrom: timestamp('valid_from', { withTimezone: true }).defaultNow().notNull(),
+	validTo: timestamp('valid_to', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull()
+});
+
 // Relations
 export const profileRelations = relations(profileTable, ({ many }) => ({
   drinkHistory: many(drinkHistory),
@@ -175,4 +203,15 @@ export const userConnectionsRelations = relations(userConnections, ({ one }) => 
     fields: [userConnections.followedId],
     references: [profileTable.userId]
   })
+}));
+
+export const locationRelations = relations(locations, ({ many }) => ({
+	menus: many(menus)
+}));
+
+export const menuRelations = relations(menus, ({ one }) => ({
+	location: one(locations, {
+		fields: [menus.locationId],
+		references: [locations.id]
+	})
 }));
